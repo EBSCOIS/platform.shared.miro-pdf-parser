@@ -14,10 +14,10 @@ The content of this project is subject to the Miro Developer Terms of Use: https
 
 - `pdf-to-svg-panel.html`: This is the side panel that opens on the left side of the Miro tool bar when clicking on the app icon.
 
-- `pdf-to-svg-panel.js`: This the JavaScript file that performs the parsing of the PDF file and recreates the table on the Miro board. It's called from within `pdf-to-svg-panel.html`.
+- `pdf-to-svg-panel.js`: This is the JavaScript file that performs the parsing of the PDF file and recreates the table on the Miro board. It's called from within `pdf-to-svg-panel.html`.
 
 - `mirotone.css`: CSS files add styling rules to the content. The CSS applies styles to the elements in your HTML page. It's called from within `pdf-to-svg-panel.html`.
 
 - `pdf.min.js`: PDF.js library to parse PDF documents and convert them into SVG (https://mozilla.github.io/pdf.js/). It's called from within `pdf-to-svg-panel.html`.
 
-- `pdf.worker.min.js`: PDF Worker JavaScript file, part of PDF.js (https://mozilla.github.io/pdf.js/). It's called from within `pdf.min.js`.
+- `pdf.worker.min.js`: PDF.js Worker library, part of PDF.js (https://mozilla.github.io/pdf.js/). It's called from within `pdf.min.js`.
