@@ -1,4 +1,4 @@
-# Miro PDF Tables Parser
+# Miro Table Parser (from PDF)
 
 This is a protorype app created to show the capabilities of the Developer Platform of Miro. The app parses a PDF file that contains Miro Tables within a Frame and converts them into SVGs in an HTML page. The app then parses the individual HTML elements and replicates them on the Miro board with Miro widgets (a grid of rectangles) instead of a table.
 
