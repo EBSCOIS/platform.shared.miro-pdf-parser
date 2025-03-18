@@ -1,0 +1,149 @@
+<!-- DISCLAIMER: The content of this file is subject to the Miro Developer Terms of Use: https://miro.com/legal/developer-terms-of-use/ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF to HTML (SVG with Text)</title>
+  <script src="pdf.min.js"></script>
+  <script id="miro-sdk2" src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+  <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=">
+  <link rel="stylesheet" href="mirotone.css">
+  <style>
+    .custom-table {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr); /* Adjust columns as needed */
+      border: 1px solid #ccc;
+    }
+    .custom-table > div {
+      border: 1px solid #ddd;
+      padding: 5px;
+    }
+    .centered-content {
+        box-sizing: border-box;
+        max-width: 350px;
+        top: 40%;
+        left: 50%;
+        position: absolute;
+        transform: translateX(-50%) translateY(-50%);
+        cursor: pointer;
+        text-align: center;
+    }
+    #title {
+      margin: 7px 0 16px 0;
+      font-weight: bold;
+      /*font-size: 16px;*/
+    }
+    #waiting_section {
+      display: none;
+    }
+    #content {
+      padding: 5px 20px 20px 20px;
+      /*display: none;*/
+    }
+    #header {
+      position: absolute;
+      top: 7px;
+      /*left: 25px;*/
+      width: 327px;
+    }
+    #complete_message {
+      display: none;
+    }
+    #complete_icon {
+      display: none;
+    }
+    /* Spinner Loading Incon - BEGIN */
+    .spinner {
+        display: table;
+        margin: 25px auto 0 auto;
+        padding-top: 10px;
+        position: relative;
+    }
+    
+    #output {
+      visibility: hidden;
+    }
+    
+    #processing_message {
+      display: none;
+    }
+
+    /* Safari */
+    @-webkit-keyframes miro_migration_extension {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+    }
+
+      @keyframes miro_migration_extension {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading:after {
+        -webkit-animation: miro_migration_extension .5s linear infinite;
+        animation: miro_migration_extension .5s linear infinite;
+        border: 2px solid black;
+        border-color: transparent black black transparent;
+        border-radius: 24px;
+        bottom: 0;
+        content: "";
+        height: 2em;
+        width: 2em;
+        /*left: 0;*/
+        left: calc(50% - (2em / 2));
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    /* Spinner Loading Incon - END */
+    
+    #frame_wrapper {
+      font-size: 14px;
+    }
+    
+    #steps li {
+      margin-bottom: 10px;
+    }
+    
+    #steps {
+      list-style-type: lower-alpha;
+    }
+  </style>
+</head>
+<body>
+  <div id="output"></div>
+  <div id="content">
+    <div id="header">
+      <h3 id="title">Recreate Table for Rally</h3>
+      <div id="frame_wrapper" style="margin-bottom: 16px">
+        <ol style="font-size: 14px;margin: 0 0 0 -25px">
+          <li style="margin: 10px 0 10px 0">Export the desired frame as PDF. To do so, proceed as follows:</li>
+          <ol id="steps">
+            <li>Click on the desired frame by its border (only the frame - without its contents)</li>
+            <li>On the context menu that appears, click on the three dots (on the right-side of the context menu)</li>
+            <li>Choose <strong>Export as PDF</strong></li>
+            <li>Select <strong>Best quality</strong> and click on <strong>Export</strong></li>
+          </ol>
+          <li style="margin: 10px 0 10px 0">Select the frame to replicate including all its contents</li>
+          <li style="margin: 10px 0 10px 0">Keeping the selection active, move your board view to a section where the new table should appear (e.g. an empty area of the board)</li>
+          <li style="margin: 10px 0 10px 0">Upload the PDF file you exported on <strong>Step 1</strong> below</li>
+        </ol>
+      </div>
+      <input type="file" id="upload" accept="application/pdf" disabled="disabled" />
+      <div id="processing_message">Parsing PDF file. Please wait...</div>
+      <div id="complete_message">Success! Parsing completed.</div>
+    </div>
+    <div id="waiting_section" class="centered-content">
+      <div id="complete_icon" class="completed">
+          <svg version="1.1" viewbox="0 0 448 448" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" width="84px"><g transform="translate(-32,-32)" fill="#43a047"><path d="m256 32c-123.7 0-224 100.3-224 224s100.3 224 224 224 224-100.3 224-224-100.3-224-224-224zm114.9 149.1-139.1 178.5c-1.1 1.1-2.9 3.5-5.1 3.5-2.3 0-3.8-1.6-5.1-2.9s-78.9-75.9-78.9-75.9l-1.5-1.5c-0.6-0.9-1.1-2-1.1-3.2s0.5-2.3 1.1-3.2c0.4-0.4 0.7-0.7 1.1-1.2 7.7-8.1 23.3-24.5 24.3-25.5 1.3-1.3 2.4-3 4.8-3 2.5 0 4.1 2.1 5.3 3.3s45 43.3 45 43.3l111.3-143c1-0.8 2.2-1.4 3.5-1.4s2.5 0.5 3.5 1.3l30.6 24.1c0.8 1 1.3 2.2 1.3 3.5 0.1 1.3-0.4 2.4-1 3.3z" fill="#43a047"/></g></svg>
+      </div>
+      <div id="loading_spinner" class="spinner">
+        <span class="loading"></span>
+      </div>
+    </div>
+  </div>
+  <script id="main_panel_script" src="pdf-to-svg-panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!-- DISCLAIMER: The content of this file is subject to the Miro Developer Terms of Use: https://miro.com/legal/developer-terms-of-use/ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF to HTML (SVG with Text)</title>
+  <script id="miro-sdk2" src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+  <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=">
+</head>
+<body>
+  <script>    
+    async function init() {
+      console.log('############# PDF TO SVG #############');
+      miro.board.ui.on('icon:click', async () => {
+        await miro.board.ui.openPanel({ url: 'pdf-to-svg-panel.html' });
+      });
+    }
+    init();
+  </script>
+</body>
+</html>
