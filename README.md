@@ -10,7 +10,7 @@ The content of this project is subject to the Miro Developer Terms of Use: https
 
 - `README.md`: This file.
 
-- `pdf-to-svg-app.html`: This is the main app file. This is the file that will be connected in Miro to load the app in the board.
+- `pdf-to-svg-app.html`: This is the main app file. This is the file that will be connected in Miro to load the app on the board.
 
 - `pdf-to-svg-panel.html`: This is the side panel that opens on the left side of the Miro tool bar when clicking on the app icon.
 
