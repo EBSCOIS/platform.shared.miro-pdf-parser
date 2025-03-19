@@ -1,6 +1,6 @@
 # Miro Table Parser (from PDF)
 
-This is a protorype app created to show the capabilities of the Developer Platform of Miro. The app parses a PDF file that contains Miro Tables within a Frame and converts them into SVGs in an HTML page. The app then parses the individual HTML elements and replicates them on the Miro board with Miro widgets (a grid of rectangles) instead of a table.
+This is a prototype app created to show the capabilities of the Developer Platform of Miro. The app parses a PDF file that contains Miro Tables within a Frame and converts them into SVGs in an HTML page. The app then parses the individual HTML elements and replicates them on the Miro board with Miro widgets (a grid of rectangles) instead of a table.
 
 ## DISCLAIMER
 
@@ -21,3 +21,20 @@ The content of this project is subject to the Miro Developer Terms of Use: https
 - `pdf.min.js`: PDF.js library to parse PDF documents and convert them into SVG (https://mozilla.github.io/pdf.js/). It's called from within `pdf-to-svg-panel.html`.
 
 - `pdf.worker.min.js`: PDF.js Worker library, part of PDF.js (https://mozilla.github.io/pdf.js/). It's called from within `pdf.min.js`.
+
+## Developing
+
+### Prerequisites
+
+- In the App settings, set the App Url to `http://localhost:3000/pdf-to-svg-app.html` and save
+- Node installed
+
+### Getting Started
+
+Run `npm install -g serve`
+
+Run `server`
+
+Open to your desired Miro Board and start developing.
+
+Set the App Url back to `https://ebscois.github.io/platform.shared.miro-pdf-parser/pdf-to-svg-app.html` to see the changes live. 
