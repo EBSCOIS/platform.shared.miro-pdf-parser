@@ -1795,7 +1795,6 @@ document.getElementById('upload').addEventListener('change', async (event) => {
       htmlText = htmlTextArr.join('');
       item.text_content_orig = `<p>${htmlText.toString()}</p>`; 
       item.text_content = string;
-      console.dir(item.text_content_orig);
     }
 
     window.baseCells.push(item);
