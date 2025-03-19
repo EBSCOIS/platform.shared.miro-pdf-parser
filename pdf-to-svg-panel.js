@@ -444,7 +444,7 @@ async function createRectangle(text,x,y,w,h,style,frame,htmlId) {
     x: x,
     y: y,
     width: w,
-    height: h
+    height: height: (h < 8 ? 8 : h)
   });
   if (frame) { await frame.add(shape) }
   let p = window.connectingLinesArray.length;
@@ -537,7 +537,7 @@ async function createShapes(array, type, frame) {
         let h = rect.height;
 
         let style = {
-          color: (array[i].font_color ? array[i].font_color : '#ff0000'),
+          color: (array[i]?.font_color ? array[i]?.font_color : '#ff0000'),
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.text_style?.fillColor : '#ffffff'),
           fontSize: 5,
           fontFamily: 'arial',
@@ -570,16 +570,16 @@ async function createShapes(array, type, frame) {
         let h = rect.height;
 
         let style = {
-          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : array[i].font_color ? array[i].font_color : '#1a1a1a'),
+          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : array[i]?.font_color ? array[i]?.font_color : '#1a1a1a'),
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
-          textAlign: array[i]?.text_style?.textAlign ? array[i].text_style.textAlign : 'center',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : 'center',
           textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
-          borderStyle: array[i]?.text_style?.borderStyle ? array[i].text_style.borderStyle : 'normal',
-          borderOpacity: array[i]?.text_style?.borderOpacity ? array[i].text_style.borderOpacity : 1.0,
-          borderColor: array[i]?.text_style?.borderColor ? array[i].text_style.borderColor : linesColor,
-          borderWidth: array[i]?.text_style?.borderWidth ? array[i].text_style.borderWidth : 2.0,
+          borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style.borderStyle : 'normal',
+          borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
+          borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : linesColor,
+          borderWidth: array[i]?.text_style?.borderWidth ? array[i]?.text_style?.borderWidth : 2.0,
           fillOpacity: (array[i]?.text_style?.fillOpacity ? array[i]?.text_style?.fillOpacity : array[i]?.background_opacity ? array[i]?.background_opacity : 1.0)
         };
 
@@ -656,17 +656,17 @@ async function createShapes(array, type, frame) {
         let h = rect.height;
 
         let style = {
-          color: (array[i]?.text_style?.color ? array[i].text_style.color : '#ff0000'),
-          fillColor: (array[i].background_color ? array[i].background_color : array[i].text_style.fillColor ? array[i].text_style.fillColor : '#ff0000'),
-          fontSize: (array[i].font_size ? array[i].font_size : (array[i].text_style.fontSize ? array[i].text_style.fontSize : 14)),
-          fontFamily: array[i].text_style.fontFamily ? array[i].text_style.fontFamily : 'arial',
-          textAlign: array[i].text_style.textAlign ? array[i].text_style.textAlign : 'center',
-          textAlignVertical: array[i].text_style.textAlignVertical ? array[i].text_style.textAlignVertical : 'middle',
-          borderStyle: array[i].text_style.borderStyle ? array[i].text_style.borderStyle : 'normal',
-          borderOpacity: array[i].text_style.borderOpacity ? array[i].text_style.borderOpacity : 1.0,
-          borderColor: array[i].text_style.borderColor ? array[i].text_style.borderColor : '#ffffff',
-          borderWidth: array[i].text_style.borderWidth ? array[i].text_style.borderWidth : 1.0,
-          fillOpacity: (array[i].opacity ? array[i].opacity : array[i]?.text_style?.fillOpacity ? array[i]?.text_style?.fillOpacity : 1.0)
+          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : '#ff0000'),
+          fillColor: (array[i]?.background_color ? array[i]?.background_color : array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : '#ff0000'),
+          fontSize: (array[i]?.font_size ? array[i]?.font_size : (array[i]?.text_style?.fontSize ? array[i]?.text_style?.fontSize : 14)),
+          fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
+          borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style?.borderStyle : 'normal',
+          borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
+          borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : '#ffffff',
+          borderWidth: array[i]?.text_style?.borderWidth ? array[i]?.text_style?.borderWidth : 1.0,
+          fillOpacity: (array[i]?.opacity ? array[i]?.opacity : array[i]?.text_style?.fillOpacity ? array[i]?.text_style?.fillOpacity : 1.0)
         };
 
         shapeCreationPromises.push(createRectangle(text,x,y,w,h,style,frame,array[i].element));
@@ -1345,7 +1345,15 @@ document.getElementById('upload').addEventListener('change', async (event) => {
           pathsWithFill[i].setAttribute('data-type', 'extra_cell');
           baseElements[a].setAttribute('data-type', 'base_cell_with_extra_cell');
 
-          window.extraCells.push(item);
+          let itemFound = false;
+          for(let b=0; b < window.extraCells.length; b++) {
+            if (window.extraCells[b].extra_cell === item.extra_cell) {
+              itemFound = true;
+            }
+          }
+          if (!itemFound) {
+            window.extraCells.push(item);
+          }
           break;
         }
       }
