@@ -443,8 +443,8 @@ async function createRectangle(text,x,y,w,h,style,frame,htmlId) {
     style: style,
     x: x,
     y: y,
-    width: w,
-    height: height: (h < 8 ? 8 : h)
+    width: (w < 8 ? 8 : w),
+    height: (h < 8 ? 8 : h)
   });
   if (frame) { await frame.add(shape) }
   let p = window.connectingLinesArray.length;
@@ -538,7 +538,7 @@ async function createShapes(array, type, frame) {
 
         let style = {
           color: (array[i]?.font_color ? array[i]?.font_color : '#ff0000'),
-          fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.text_style?.fillColor : '#ffffff'),
+          fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 5,
           fontFamily: 'arial',
           textAlign: 'center',
