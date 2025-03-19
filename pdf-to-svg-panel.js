@@ -1391,10 +1391,10 @@ document.getElementById('upload').addEventListener('change', async (event) => {
   let textHtmlElements = document.querySelectorAll('tspan[font-family]');
   for(let i=0; i < textHtmlElements.length; i++) {
     let fontNameAttr = textHtmlElements[i].getAttribute('font-family');
-    textHtmlElements[i].setAttribute('data-font-name',window.fontsData[fontNameAttr].font_name_short);
-    textHtmlElements[i].parentElement.setAttribute('data-parent-font-name',window.fontsData[fontNameAttr].font_name_short);
-    textHtmlElements[i].setAttribute('data-font-weight',window.fontsData[fontNameAttr].font_weight);
-    textHtmlElements[i].parentElement.setAttribute('data-parent-font-weight',window.fontsData[fontNameAttr].font_weight);
+    textHtmlElements[i].setAttribute('data-font-name',(window.fontsData[fontNameAttr]?.font_name_short || 'arial'));
+    textHtmlElements[i].parentElement.setAttribute('data-parent-font-name',(window.fontsData[fontNameAttr]?.font_name_short || 'arial' ));
+    textHtmlElements[i].setAttribute('data-font-weight',(window.fontsData[fontNameAttr]?.font_weight) || 'arial');
+    textHtmlElements[i].parentElement.setAttribute('data-parent-font-weight',(window.fontsData[fontNameAttr]?.font_weight || 'arial'));
     textHtmlElements[i].parentElement.setAttribute('data-parent-text','true');
   }
 
