@@ -18,6 +18,36 @@ window.frameToReplicate = {
 };
 window.miroWidgets = null;
 
+/* Function to detect text alignment within a cell */
+function isElementWithinAndAligned(inner, outer) {
+  const innerRect = inner.getBoundingClientRect();
+  const outerRect = outer.getBoundingClientRect();
+
+  // Check if the inner element is within the outer element
+  const isWithin =
+    innerRect.left >= outerRect.left &&
+    innerRect.right <= outerRect.right &&
+    innerRect.top >= outerRect.top &&
+    innerRect.bottom <= outerRect.bottom;
+
+  // Check if the inner element is centered
+  const innerCenterX = innerRect.left + innerRect.width / 2;
+  const innerCenterY = innerRect.top + innerRect.height / 2;
+  const outerCenterX = outerRect.left + outerRect.width / 2;
+  const outerCenterY = outerRect.top + outerRect.height / 2;
+
+  const isCentered =
+    Math.abs(innerCenterX - outerCenterX) <= 1 &&
+    Math.abs(innerCenterY - outerCenterY) <= 1;
+
+  // Check if the inner element is aligned to the top-left corner
+  const isTopLeftAligned =
+    Math.abs(innerRect.left - outerRect.left) <= 1 &&
+    Math.abs(innerRect.top - outerRect.top) <= 1;
+
+  return { isWithin, isCentered, isTopLeftAligned };
+}
+
 /* Function to check if shape is double - The parsing of the PDF into SVG duplicate several shapes */
 function isDoubleShape(shape) {
   let shapeRect = shape.getBoundingClientRect();
@@ -545,8 +575,8 @@ async function createShapes(array, type, frame) {
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 5,
           fontFamily: 'arial',
-          textAlign: 'center',
-          textAlignVertical: 'middle',
+          textAlign: array[i]?.text_alignment ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_alignment ? 'top' : 'middle',,
           borderStyle: 'normal',
           borderOpacity: 1.0,
           borderColor: linesColor,
@@ -578,8 +608,8 @@ async function createShapes(array, type, frame) {
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
-          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : 'center',
-          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment ? 'top' : 'middle',
           borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style.borderStyle : 'normal',
           borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
           borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : linesColor,
@@ -1604,6 +1634,11 @@ document.getElementById('upload').addEventListener('change', async (event) => {
                 let cellOpacity = window.extraCells[i].extra_cell_element.getAttribute('fill-opacity');
                 cellOpacity = parseFloat(cellOpacity);
                 window.extraCells[i].background_opacity = cellOpacity;
+
+                let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.extraCells[i].extra_cell_element);
+                if (alignment.isTopLeftAligned) {
+                  window.extraCells[i].text_alignment = 'top_left';
+                }
               }
             }
           }
@@ -1775,7 +1810,12 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let cellOpacity = baseElements[i].getAttribute('fill-opacity');
                 cellOpacity = parseFloat(cellOpacity);
-                item.background_opacity = cellOpacity;                
+                item.background_opacity = cellOpacity;
+
+                let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.extraCells[i].extra_cell_element);
+                if (alignment.isTopLeftAligned) {
+                  window.extraCells[i].text_alignment = 'top_left';
+                }
               }
             }
           }
