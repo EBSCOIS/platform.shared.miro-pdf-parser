@@ -18,6 +18,36 @@ window.frameToReplicate = {
 };
 window.miroWidgets = null;
 
+/* Function to detect text alignment within a cell */
+function isElementWithinAndAligned(inner, outer) {
+  const innerRect = inner.getBoundingClientRect();
+  const outerRect = outer.getBoundingClientRect();
+
+  // Check if the inner element is within the outer element
+  const isWithin =
+    innerRect.left >= outerRect.left &&
+    innerRect.right <= outerRect.right &&
+    innerRect.top >= outerRect.top &&
+    innerRect.bottom <= outerRect.bottom;
+
+  // Check if the inner element is centered
+  const innerCenterX = innerRect.left + innerRect.width / 2;
+  const innerCenterY = innerRect.top + innerRect.height / 2;
+  const outerCenterX = outerRect.left + outerRect.width / 2;
+  const outerCenterY = outerRect.top + outerRect.height / 2;
+
+  const isCentered =
+    Math.abs(innerCenterX - outerCenterX) <= 1 &&
+    Math.abs(innerCenterY - outerCenterY) <= 1;
+
+  // Check if the inner element is aligned to the top-left corner
+  const isTopLeftAligned =
+    Math.abs(innerRect.left - outerRect.left) <= 1 &&
+    Math.abs(innerRect.top - outerRect.top) <= 1;
+
+  return { isWithin, isCentered, isTopLeftAligned };
+}
+
 /* Function to check if shape is double - The parsing of the PDF into SVG duplicate several shapes */
 function isDoubleShape(shape) {
   let shapeRect = shape.getBoundingClientRect();
@@ -30,6 +60,10 @@ function isDoubleShape(shape) {
         shape.setAttribute('data-type', 'duplicate-shape');
         shape.parentElement.parentElement.setAttribute('data-type', 'duplicate-shape-parent');
         isDouble = true;
+        let currentShapeColor = shape.getAttribute('fill');
+        if (referenceArray[i].background_color === '#ffffff' && currentShapeColor !== '#ffffff') {
+          referenceArray[i].background_color = currentShapeColor; 
+        }
       }
     }
   }
@@ -443,16 +477,16 @@ async function createRectangle(text,x,y,w,h,style,frame,htmlId) {
     style: style,
     x: x,
     y: y,
-    width: w,
-    height: h
+    width: (w < 8 ? 8 : w),
+    height: (h < 8 ? 8 : h)
   });
   if (frame) { await frame.add(shape) }
   let p = window.connectingLinesArray.length;
   while (--p >= 0) {
-    if (connectingLinesArray[p].startElement.html_id === htmlId) {
+    if (connectingLinesArray[p].startElement && connectingLinesArray[p].startElement.html_id === htmlId) {
       connectingLinesArray[p].startElement.miro_id = shape.id;
     }
-    if (connectingLinesArray[p].endElement.html_id === htmlId) {
+    if (connectingLinesArray[p].endElement && connectingLinesArray[p].endElement.html_id === htmlId) {
       connectingLinesArray[p].endElement.miro_id = shape.id;
     }
   }
@@ -537,12 +571,12 @@ async function createShapes(array, type, frame) {
         let h = rect.height;
 
         let style = {
-          color: (array[i].font_color ? array[i].font_color : '#ff0000'),
-          fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.text_style?.fillColor : '#ffffff'),
+          color: (array[i]?.font_color ? array[i]?.font_color : '#ff0000'),
+          fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 5,
           fontFamily: 'arial',
-          textAlign: 'center',
-          textAlignVertical: 'middle',
+          textAlign: array[i]?.text_alignment ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_alignment ? 'top' : 'middle',,
           borderStyle: 'normal',
           borderOpacity: 1.0,
           borderColor: linesColor,
@@ -570,16 +604,16 @@ async function createShapes(array, type, frame) {
         let h = rect.height;
 
         let style = {
-          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : array[i].font_color ? array[i].font_color : '#1a1a1a'),
+          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : array[i]?.font_color ? array[i]?.font_color : '#1a1a1a'),
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
-          textAlign: array[i]?.text_style?.textAlign ? array[i].text_style.textAlign : 'center',
-          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
-          borderStyle: array[i]?.text_style?.borderStyle ? array[i].text_style.borderStyle : 'normal',
-          borderOpacity: array[i]?.text_style?.borderOpacity ? array[i].text_style.borderOpacity : 1.0,
-          borderColor: array[i]?.text_style?.borderColor ? array[i].text_style.borderColor : linesColor,
-          borderWidth: array[i]?.text_style?.borderWidth ? array[i].text_style.borderWidth : 2.0,
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment ? 'top' : 'middle',
+          borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style.borderStyle : 'normal',
+          borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
+          borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : linesColor,
+          borderWidth: array[i]?.text_style?.borderWidth ? array[i]?.text_style?.borderWidth : 2.0,
           fillOpacity: (array[i]?.text_style?.fillOpacity ? array[i]?.text_style?.fillOpacity : array[i]?.background_opacity ? array[i]?.background_opacity : 1.0)
         };
 
@@ -656,29 +690,31 @@ async function createShapes(array, type, frame) {
         let h = rect.height;
 
         let style = {
-          color: (array[i]?.text_style?.color ? array[i].text_style.color : '#ff0000'),
-          fillColor: (array[i].background_color ? array[i].background_color : array[i].text_style.fillColor ? array[i].text_style.fillColor : '#ff0000'),
-          fontSize: (array[i].font_size ? array[i].font_size : (array[i].text_style.fontSize ? array[i].text_style.fontSize : 14)),
-          fontFamily: array[i].text_style.fontFamily ? array[i].text_style.fontFamily : 'arial',
-          textAlign: array[i].text_style.textAlign ? array[i].text_style.textAlign : 'center',
-          textAlignVertical: array[i].text_style.textAlignVertical ? array[i].text_style.textAlignVertical : 'middle',
-          borderStyle: array[i].text_style.borderStyle ? array[i].text_style.borderStyle : 'normal',
-          borderOpacity: array[i].text_style.borderOpacity ? array[i].text_style.borderOpacity : 1.0,
-          borderColor: array[i].text_style.borderColor ? array[i].text_style.borderColor : '#ffffff',
-          borderWidth: array[i].text_style.borderWidth ? array[i].text_style.borderWidth : 1.0,
-          fillOpacity: (array[i].opacity ? array[i].opacity : array[i]?.text_style?.fillOpacity ? array[i]?.text_style?.fillOpacity : 1.0)
+          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : '#ff0000'),
+          fillColor: (array[i]?.background_color ? array[i]?.background_color : array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : '#ff0000'),
+          fontSize: 4,
+          fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
+          borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style?.borderStyle : 'normal',
+          borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
+          borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : '#ffffff',
+          borderWidth: array[i]?.text_style?.borderWidth ? array[i]?.text_style?.borderWidth : 1.0,
+          fillOpacity: (array[i]?.opacity ? array[i]?.opacity : array[i]?.text_style?.fillOpacity ? array[i]?.text_style?.fillOpacity : 1.0)
         };
 
         shapeCreationPromises.push(createRectangle(text,x,y,w,h,style,frame,array[i].element));
       }
       else if (type === 'connecting_lines') {
-        const line = array[i];
-        const startEl = array[i].startElement.miro_id;
-        const endEl = array[i].endElement.miro_id;
-        const startSnap = array[i].startElement.side;
-        const endSnap = array[i].endElement.side;
-        
-        shapeCreationPromises.push(createConnectingLine(startEl,endEl,startSnap,endSnap));
+        if (array[i].startElement && array[i].endElement) {
+          const line = array[i];
+          const startEl = array[i].startElement.miro_id;
+          const endEl = array[i].endElement.miro_id;
+          const startSnap = array[i].startElement.side;
+          const endSnap = array[i].endElement.side;
+          
+          shapeCreationPromises.push(createConnectingLine(startEl,endEl,startSnap,endSnap));
+        }
       }
   }
 
@@ -1339,13 +1375,24 @@ document.getElementById('upload').addEventListener('change', async (event) => {
             base_cell: baseElements[a].id,
             base_cell_element: baseElements[a],
             text_content: null,
-            text_content_element: null
+            text_content_element: null,
+            font_size: null,
+            background_color: pathsWithFill[i].getAttribute('fill'),
+            opacity: parseFloat(pathsWithFill[i].getAttribute('fill-opacity'))
           };
 
           pathsWithFill[i].setAttribute('data-type', 'extra_cell');
           baseElements[a].setAttribute('data-type', 'base_cell_with_extra_cell');
 
-          window.extraCells.push(item);
+          let itemFound = false;
+          for(let b=0; b < window.extraCells.length; b++) {
+            if (window.extraCells[b].extra_cell === item.extra_cell) {
+              itemFound = true;
+            }
+          }
+          if (!itemFound) {
+            window.extraCells.push(item);
+          }
           break;
         }
       }
@@ -1383,10 +1430,10 @@ document.getElementById('upload').addEventListener('change', async (event) => {
   let textHtmlElements = document.querySelectorAll('tspan[font-family]');
   for(let i=0; i < textHtmlElements.length; i++) {
     let fontNameAttr = textHtmlElements[i].getAttribute('font-family');
-    textHtmlElements[i].setAttribute('data-font-name',window.fontsData[fontNameAttr].font_name_short);
-    textHtmlElements[i].parentElement.setAttribute('data-parent-font-name',window.fontsData[fontNameAttr].font_name_short);
-    textHtmlElements[i].setAttribute('data-font-weight',window.fontsData[fontNameAttr].font_weight);
-    textHtmlElements[i].parentElement.setAttribute('data-parent-font-weight',window.fontsData[fontNameAttr].font_weight);
+    textHtmlElements[i].setAttribute('data-font-name',(window.fontsData[fontNameAttr]?.font_name_short || 'arial'));
+    textHtmlElements[i].parentElement.setAttribute('data-parent-font-name',(window.fontsData[fontNameAttr]?.font_name_short || 'arial' ));
+    textHtmlElements[i].setAttribute('data-font-weight',(window.fontsData[fontNameAttr]?.font_weight) || 'arial');
+    textHtmlElements[i].parentElement.setAttribute('data-parent-font-weight',(window.fontsData[fontNameAttr]?.font_weight || 'arial'));
     textHtmlElements[i].parentElement.setAttribute('data-parent-text','true');
   }
 
@@ -1587,6 +1634,11 @@ document.getElementById('upload').addEventListener('change', async (event) => {
                 let cellOpacity = window.extraCells[i].extra_cell_element.getAttribute('fill-opacity');
                 cellOpacity = parseFloat(cellOpacity);
                 window.extraCells[i].background_opacity = cellOpacity;
+
+                let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.extraCells[i].extra_cell_element);
+                if (alignment.isTopLeftAligned) {
+                  window.extraCells[i].text_alignment = 'top_left';
+                }
               }
             }
           }
@@ -1758,7 +1810,12 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let cellOpacity = baseElements[i].getAttribute('fill-opacity');
                 cellOpacity = parseFloat(cellOpacity);
-                item.background_opacity = cellOpacity;                
+                item.background_opacity = cellOpacity;
+
+                let alignment = isElementWithinAndAligned(textHtmlElementInCell, baseElements[i]);
+                if (alignment.isTopLeftAligned) {
+                  window.extraCells[i].text_alignment = 'top_left';
+                }
               }
             }
           }
@@ -1787,7 +1844,6 @@ document.getElementById('upload').addEventListener('change', async (event) => {
       htmlText = htmlTextArr.join('');
       item.text_content_orig = `<p>${htmlText.toString()}</p>`; 
       item.text_content = string;
-      console.dir(item.text_content_orig);
     }
 
     window.baseCells.push(item);
