@@ -1812,7 +1812,7 @@ document.getElementById('upload').addEventListener('change', async (event) => {
                 cellOpacity = parseFloat(cellOpacity);
                 item.background_opacity = cellOpacity;
 
-                let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.extraCells[i].extra_cell_element);
+                let alignment = isElementWithinAndAligned(textHtmlElementInCell, baseElements[i]);
                 if (alignment.isTopLeftAligned) {
                   window.extraCells[i].text_alignment = 'top_left';
                 }
