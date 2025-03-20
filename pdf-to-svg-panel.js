@@ -576,7 +576,7 @@ async function createShapes(array, type, frame) {
           fontSize: 5,
           fontFamily: 'arial',
           textAlign: array[i]?.text_alignment ? 'left' : 'center',
-          textAlignVertical: array[i]?.text_alignment ? 'top' : 'middle',,
+          textAlignVertical: array[i]?.text_alignment ? 'top' : 'middle',
           borderStyle: 'normal',
           borderOpacity: 1.0,
           borderColor: linesColor,
