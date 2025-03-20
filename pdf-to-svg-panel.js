@@ -1814,7 +1814,7 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let alignment = isElementWithinAndAligned(textHtmlElementInCell, baseElements[i]);
                 if (alignment.isTopLeftAligned) {
-                  window.extraCells[i].text_alignment = 'top_left';
+                  item.text_alignment = 'top_left';
                 }
               }
             }
