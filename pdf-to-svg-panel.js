@@ -42,10 +42,13 @@ function isElementWithinAndAligned(inner, outer) {
 
   // Check if the inner element is aligned to the top-left corner
   const isTopLeftAligned =
-    Math.abs(innerRect.left - outerRect.left) <= 1 &&
-    Math.abs(innerRect.top - outerRect.top) <= 1;
+    (Math.abs(innerRect.left - outerRect.left) <= 1 || Math.abs(innerRect.left - outerRect.left) <= 3) &&
+    (Math.abs(innerRect.top - outerRect.top) <= 1 || Math.abs(innerRect.top - outerRect.top) <= 3);
+  
+  const isLeftAligned =
+    Math.abs(innerRect.left - outerRect.left) <= 1 || Math.abs(innerRect.left - outerRect.left) <= 3;
 
-  return { isWithin, isCentered, isTopLeftAligned };
+  return { isWithin, isCentered, isTopLeftAligned, isLeftAligned };
 }
 
 /* Function to check if shape is double - The parsing of the PDF into SVG duplicate several shapes */
@@ -575,8 +578,8 @@ async function createShapes(array, type, frame) {
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 5,
           fontFamily: 'arial',
-          textAlign: array[i]?.text_alignment ? 'left' : 'center',
-          textAlignVertical: array[i]?.text_alignment ? 'top' : 'middle',
+          textAlign: array[i]?.text_alignment_horizontal ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_alignment_vertical ? 'top' : 'middle',
           borderStyle: 'normal',
           borderOpacity: 1.0,
           borderColor: linesColor,
@@ -608,8 +611,8 @@ async function createShapes(array, type, frame) {
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
-          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment ? 'left' : 'center',
-          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment ? 'top' : 'middle',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment_horizontal ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment_vertical ? 'top' : 'middle',
           borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style.borderStyle : 'normal',
           borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
           borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : linesColor,
@@ -694,8 +697,8 @@ async function createShapes(array, type, frame) {
           fillColor: (array[i]?.background_color ? array[i]?.background_color : array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : '#ff0000'),
           fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
-          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : 'center',
-          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment_horizontal ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment_vertical ? 'top': 'middle',
           borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style?.borderStyle : 'normal',
           borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
           borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : '#ffffff',
@@ -1590,7 +1593,11 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.floatingBoxes[i].element);
                 if (alignment.isTopLeftAligned) {
-                  window.floatingBoxes[i].text_alignment = 'top_left';
+                  window.floatingBoxes[i].text_alignment_horizontal = 'left';
+                  window.floatingBoxes[i].text_alignment_vertical = 'top';
+                }
+                else if (alignment.isLeftAligned) {
+                  window.floatingBoxes[i].text_alignment_horizontal = 'left';
                 }
               }
             }
@@ -1771,7 +1778,11 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.extraCells[i].extra_cell_element);
                 if (alignment.isTopLeftAligned) {
-                  window.extraCells[i].text_alignment = 'top_left';
+                  window.extraCells[i].text_alignment_horizontal = 'left';
+                  window.extraCells[i].text_alignment_vertical = 'top';
+                }
+                else if (alignment.isLeftAligned) {
+                  window.extraCells[i].text_alignment_horizontal = 'left';
                 }
               }
             }
@@ -1948,7 +1959,11 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let alignment = isElementWithinAndAligned(textHtmlElementInCell, baseElements[i]);
                 if (alignment.isTopLeftAligned) {
-                  item.text_alignment = 'top_left';
+                  item.text_alignment_horizontal = 'left';
+                  item.text_alignment_vertical = 'top';
+                }
+                else if (alignment.isLeftAligned) {
+                  item.text_alignment_horizontal = 'left';
                 }
               }
             }
