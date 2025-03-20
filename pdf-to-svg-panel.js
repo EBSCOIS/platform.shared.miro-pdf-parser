@@ -992,7 +992,8 @@ function postProcessSVG(svg) {
   var tableWidth = table.getBoundingClientRect().width; 
 
   for(let i=0; i < paths.length; i++) {  
-    if (paths[i].getBoundingClientRect().height + 52 > tableHeight || paths[i].getBoundingClientRect().width === tableWidth) {
+    //if (paths[i].getBoundingClientRect().height + 52 > tableHeight || paths[i].getBoundingClientRect().width === tableWidth) {
+    if ((paths[i].getBoundingClientRect().height + 52 > tableHeight || paths[i].getBoundingClientRect().height + 52 > (tableHeight*0.70)) || paths[i].getBoundingClientRect().width === tableWidth) {
       paths[i].setAttribute('id',`table_line${i}`);
       paths[i].setAttribute('data-type','table-line');
       linesColor = paths[i].getAttribute('stroke');
