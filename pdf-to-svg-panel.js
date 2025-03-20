@@ -449,10 +449,10 @@ async function createRectangle(text,x,y,w,h,style,frame,htmlId) {
   if (frame) { await frame.add(shape) }
   let p = window.connectingLinesArray.length;
   while (--p >= 0) {
-    if (connectingLinesArray[p].startElement.html_id === htmlId) {
+    if (connectingLinesArray[p].startElement && connectingLinesArray[p].startElement.html_id === htmlId) {
       connectingLinesArray[p].startElement.miro_id = shape.id;
     }
-    if (connectingLinesArray[p].endElement.html_id === htmlId) {
+    if (connectingLinesArray[p].endElement && connectingLinesArray[p].endElement.html_id === htmlId) {
       connectingLinesArray[p].endElement.miro_id = shape.id;
     }
   }
@@ -658,7 +658,7 @@ async function createShapes(array, type, frame) {
         let style = {
           color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : '#ff0000'),
           fillColor: (array[i]?.background_color ? array[i]?.background_color : array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : '#ff0000'),
-          fontSize: (array[i]?.font_size ? array[i]?.font_size : (array[i]?.text_style?.fontSize ? array[i]?.text_style?.fontSize : 14)),
+          fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
           textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : 'center',
           textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
@@ -1339,7 +1339,10 @@ document.getElementById('upload').addEventListener('change', async (event) => {
             base_cell: baseElements[a].id,
             base_cell_element: baseElements[a],
             text_content: null,
-            text_content_element: null
+            text_content_element: null,
+            font_size: null,
+            background_color: pathsWithFill[i].getAttribute('fill'),
+            opacity: parseFloat(pathsWithFill[i].getAttribute('fill-opacity'))
           };
 
           pathsWithFill[i].setAttribute('data-type', 'extra_cell');
