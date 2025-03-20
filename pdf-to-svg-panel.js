@@ -672,13 +672,15 @@ async function createShapes(array, type, frame) {
         shapeCreationPromises.push(createRectangle(text,x,y,w,h,style,frame,array[i].element));
       }
       else if (type === 'connecting_lines') {
-        const line = array[i];
-        const startEl = array[i].startElement.miro_id;
-        const endEl = array[i].endElement.miro_id;
-        const startSnap = array[i].startElement.side;
-        const endSnap = array[i].endElement.side;
-        
-        shapeCreationPromises.push(createConnectingLine(startEl,endEl,startSnap,endSnap));
+        if (array[i].startElement && array[i].endElement) {
+          const line = array[i];
+          const startEl = array[i].startElement.miro_id;
+          const endEl = array[i].endElement.miro_id;
+          const startSnap = array[i].startElement.side;
+          const endSnap = array[i].endElement.side;
+          
+          shapeCreationPromises.push(createConnectingLine(startEl,endEl,startSnap,endSnap));
+        }
       }
   }
 
