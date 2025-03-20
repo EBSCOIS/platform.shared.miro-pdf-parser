@@ -30,6 +30,10 @@ function isDoubleShape(shape) {
         shape.setAttribute('data-type', 'duplicate-shape');
         shape.parentElement.parentElement.setAttribute('data-type', 'duplicate-shape-parent');
         isDouble = true;
+        let currentShapeColor = shape.getAttribute('fill');
+        if (referenceArray[i].background_color === '#ffffff' && currentShapeColor !== '#ffffff') {
+          referenceArray[i].background_color = currentShapeColor; 
+        }
       }
     }
   }
