@@ -42,10 +42,13 @@ function isElementWithinAndAligned(inner, outer) {
 
   // Check if the inner element is aligned to the top-left corner
   const isTopLeftAligned =
-    Math.abs(innerRect.left - outerRect.left) <= 1 &&
-    Math.abs(innerRect.top - outerRect.top) <= 1;
+    (Math.abs(innerRect.left - outerRect.left) <= 1 || Math.abs(innerRect.left - outerRect.left) <= 3) &&
+    (Math.abs(innerRect.top - outerRect.top) <= 1 || Math.abs(innerRect.top - outerRect.top) <= 3);
+  
+  const isLeftAligned =
+    Math.abs(innerRect.left - outerRect.left) <= 1 || Math.abs(innerRect.left - outerRect.left) <= 3;
 
-  return { isWithin, isCentered, isTopLeftAligned };
+  return { isWithin, isCentered, isTopLeftAligned, isLeftAligned };
 }
 
 /* Function to check if shape is double - The parsing of the PDF into SVG duplicate several shapes */
@@ -575,8 +578,8 @@ async function createShapes(array, type, frame) {
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 5,
           fontFamily: 'arial',
-          textAlign: array[i]?.text_alignment ? 'left' : 'center',
-          textAlignVertical: array[i]?.text_alignment ? 'top' : 'middle',
+          textAlign: array[i]?.text_alignment_horizontal ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_alignment_vertical ? 'top' : 'middle',
           borderStyle: 'normal',
           borderOpacity: 1.0,
           borderColor: linesColor,
@@ -608,8 +611,8 @@ async function createShapes(array, type, frame) {
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
           fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
-          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment ? 'left' : 'center',
-          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment ? 'top' : 'middle',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment_horizontal ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment_vertical ? 'top' : 'middle',
           borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style.borderStyle : 'normal',
           borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
           borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : linesColor,
@@ -683,19 +686,19 @@ async function createShapes(array, type, frame) {
         }
         let el = array[i].element
         let rect = el.getBoundingClientRect();
-        let text = (array[i].formatted_text ? array[i].formatted_text : '');             
+        let text = (array[i]?.formatted_text ? array[i]?.formatted_text : array[i]?.text_content_orig ? array[i]?.text_content_orig : '');            
         let x = ((rect.left + rect.width / 2) + (frame.x - (frame.width / 2)));
         let y = ((rect.top + rect.height / 2) + (frame.y - (frame.height / 2)));
         let w = rect.width;
         let h = rect.height;
 
         let style = {
-          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : '#ff0000'),
+          color: (array[i]?.text_style?.color ? array[i]?.text_style?.color : array[i]?.font_color ? array[i]?.font_color : '#000000'),
           fillColor: (array[i]?.background_color ? array[i]?.background_color : array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : '#ff0000'),
           fontSize: 4,
           fontFamily: array[i]?.text_style?.fontFamily ? array[i]?.text_style?.fontFamily : 'arial',
-          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : 'center',
-          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : 'middle',
+          textAlign: array[i]?.text_style?.textAlign ? array[i]?.text_style?.textAlign : array[i]?.text_alignment_horizontal ? 'left' : 'center',
+          textAlignVertical: array[i]?.text_style?.textAlignVertical ? array[i]?.text_style?.textAlignVertical : array[i]?.text_alignment_vertical ? 'top': 'middle',
           borderStyle: array[i]?.text_style?.borderStyle ? array[i]?.text_style?.borderStyle : 'normal',
           borderOpacity: array[i]?.text_style?.borderOpacity ? array[i]?.text_style?.borderOpacity : 1.0,
           borderColor: array[i]?.text_style?.borderColor ? array[i]?.text_style?.borderColor : '#ffffff',
@@ -992,7 +995,8 @@ function postProcessSVG(svg) {
   var tableWidth = table.getBoundingClientRect().width; 
 
   for(let i=0; i < paths.length; i++) {  
-    if (paths[i].getBoundingClientRect().height + 52 > tableHeight || paths[i].getBoundingClientRect().width === tableWidth) {
+    //if (paths[i].getBoundingClientRect().height + 52 > tableHeight || paths[i].getBoundingClientRect().width === tableWidth) {
+    if ((paths[i].getBoundingClientRect().height + 52 > tableHeight || paths[i].getBoundingClientRect().height + 52 > (tableHeight*0.70)) || paths[i].getBoundingClientRect().width === tableWidth) {
       paths[i].setAttribute('id',`table_line${i}`);
       paths[i].setAttribute('data-type','table-line');
       linesColor = paths[i].getAttribute('stroke');
@@ -1462,28 +1466,165 @@ document.getElementById('upload').addEventListener('change', async (event) => {
   // Detect text within floating boxes
   for(let i=0; i < window.floatingBoxes.length; i++) {
     let text = [];
+    
     for(let c=0; c < window.textContent.items.length; c++) {
+      let tempString = window.textContent.items[c].str;
+      let cleanedString = window.textContent.items[c].str.replace(/\s+/g, '');
       if (!window.textContent.items[c].hasOwnProperty('matched')) {
         let isTextWithinCell = isTextElementWithin(window.floatingBoxes[i].element, window.textContent.items[c]);
-        
+
         if (isTextWithinCell) {
-          text.push(window.textContent.items[c].str);
-          window.textContent.items[c].matched = true;
-          let textHtmlElementInCell = findTHtmlTextElementWithin(window.floatingBoxes[i].element);
-          
-          if (textHtmlElementInCell) {
-            let fontSize = textHtmlElementInCell.getAttribute('font-size');
-            fontSize = fontSize.replaceAll('px','');
-            fontSize = parseFloat(fontSize);
-            window.textContent.items[c].font_size = fontSize;
+
+          if (window.textContent.items[c].str === '') { 
+            text.push(window.textContent.items[c].str);
+            window.textContent.items[c].matched = true;
+          }
+          else {
+            let textHtmlElementInCell = findTHtmlTextElementWithin(window.floatingBoxes[i].element);
+
+            if (textHtmlElementInCell) {
+
+              if (textHtmlElementInCell.textContent && textHtmlElementInCell.textContent !== '') {
+
+                if (textHtmlElementInCell.textContent.length === cleanedString.length) {
+                  window.textContent.items[c].matched = true;
+                  textHtmlElementInCell.setAttribute('data-matched','true');
+                  textHtmlElementInCell.setAttribute('data-text-content', tempString);
+                }
+                else if (textHtmlElementInCell.textContent.length < cleanedString.length) {
+
+                  textHtmlElementInCell.setAttribute('data-matched','true');
+                  var textElementsWithinParent = textHtmlElementInCell.parentElement.querySelectorAll('tspan');
+                  let numberOfCharacters = 0;
+
+                  for(q=0; q < textElementsWithinParent.length; q++){
+                    numberOfCharacters = numberOfCharacters + textElementsWithinParent[q].textContent.length;
+                  }
+
+                  if (numberOfCharacters === cleanedString.length) {
+                    for(q=0; q < textElementsWithinParent.length; q++){
+                      textElementsWithinParent[q].setAttribute('data-matched','true');
+                      textElementsWithinParent[q].setAttribute('data-text-content', tempString);
+                    }
+                  }
+                  window.textContent.items[c].matched = true;
+
+                }
+                else if (textHtmlElementInCell.textContent.length > cleanedString.length) {
+                  let numberOfMatchedCharacters = textHtmlElementInCell.getAttribute('data-partly-matched');
+
+                  if (!numberOfMatchedCharacters) {
+                    numberOfMatchedCharacters = 0 + cleanedString.length;
+                  }
+                  else {
+                    numberOfMatchedCharacters = parseFloat(numberOfMatchedCharacters) + cleanedString.length;
+                  }
+
+                  let addedTextContent = textHtmlElementInCell.getAttribute('data-text-content');
+                  if (!addedTextContent) {
+                    addedTextContent = tempString;
+                  }
+                  else {
+                    addedTextContent = addedTextContent + tempString;
+                  }
+
+                  if (numberOfMatchedCharacters === textHtmlElementInCell.textContent.length || numberOfMatchedCharacters === textHtmlElementInCell.textContent.length + 1) {
+                    textHtmlElementInCell.setAttribute('data-matched', 'true');
+                    textHtmlElementInCell.setAttribute('data-text-content', addedTextContent);
+                    textHtmlElementInCell.removeAttribute('data-partly-matched');
+                  }
+                  else {
+                    textHtmlElementInCell.setAttribute('data-partly-matched', numberOfMatchedCharacters);
+                    textHtmlElementInCell.setAttribute('data-text-content', addedTextContent);
+                  }
+
+                  window.textContent.items[c].matched = true;
+                }
+
+                if (textHtmlElementInCell.getAttribute('data-font-weight') === 'bold') {
+                  tempString = `<strong>${tempString}</strong>`;
+                }
+
+                if (textHtmlElementInCell.getAttribute('data-type') === 'url_text') {
+                  let hyperlinkIndex = parseFloat(textHtmlElementInCell.getAttribute('data-index'));
+                  if (!window.miroHyperlinks[hyperlinkIndex].hasOwnProperty('matched')) {
+                    let url = window.miroHyperlinks[hyperlinkIndex].url;
+                    tempString = `<a href="${url}">${tempString}</a>`;
+                    window.miroHyperlinks[hyperlinkIndex].matched = true;
+                    textHtmlElementInCell.setAttribute('data-text-content', tempString);
+                  }
+                }
+
+                let isFirstChildEl = isFirstChild(textHtmlElementInCell);
+                if (isFirstChildEl) {
+                  let currentElPosition = textHtmlElementInCell.parentElement.getBoundingClientRect();
+                  let previousSibling = textHtmlElementInCell.parentElement.previousElementSibling;
+
+                  if (previousSibling && previousSibling.tagName === 'svg:text') {
+                    let isPreviousSiblingWithinCell = isElementWithin(window.extraCells[i].extra_cell_element, previousSibling);
+
+                    if (isPreviousSiblingWithinCell) {
+                      let previousSiblingPosition = previousSibling.getBoundingClientRect();
+
+                      if (currentElPosition.top - previousSiblingPosition.bottom > 3.5) {
+                        tempString = `<br>${tempString}`;
+                      }
+                    }
+                  }
+                }
+                text.push(tempString);
+
+                let fontSize = textHtmlElementInCell.getAttribute('font-size');
+                fontSize = fontSize.replaceAll('px','');
+                fontSize = parseFloat(fontSize);
+                window.textContent.items[c].font_size = fontSize;
+                window.floatingBoxes[i].font_size = fontSize;
+
+                let fontColor = textHtmlElementInCell.getAttribute('fill');
+                window.textContent.items[c].font_color = fontColor;
+                window.floatingBoxes[i].font_color = fontColor;
+
+                let cellColor = window.floatingBoxes[i].element.getAttribute('fill');
+                window.floatingBoxes[i].background_color = cellColor;
+
+                let cellOpacity = window.floatingBoxes[i].element.getAttribute('fill-opacity');
+                cellOpacity = parseFloat(cellOpacity);
+                window.floatingBoxes[i].background_opacity = cellOpacity;
+
+                let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.floatingBoxes[i].element);
+                if (alignment.isTopLeftAligned) {
+                  window.floatingBoxes[i].text_alignment_horizontal = 'left';
+                  window.floatingBoxes[i].text_alignment_vertical = 'top';
+                }
+                else if (alignment.isLeftAligned) {
+                  window.floatingBoxes[i].text_alignment_horizontal = 'left';
+                }
+              }
+            }
           }
         }
       }
     }
     if (text.length > 0) {
+      let htmlTextArr = [];
+      let htmlText;
+      for (let m=0; m < text.length; m++) {
+        if (text[m] === '') {
+          if (m !== 0 && m !== m.length - 1) {
+            htmlTextArr.push('<br>');
+          }
+        }
+        else {
+          let textCopy = text[m].toString();
+          htmlTextArr.push(textCopy);
+        }
+      }
       let string = text.join('');
+      string = extractRenderedText(string);
+      htmlText = htmlTextArr.join('');
+      window.floatingBoxes[i].text_content_orig = `<p>${htmlText.toString()}</p>`; 
       string = string.replace(/\s+/g, '');
-      window.floatingBoxes[i].text_content = string; 
+      window.floatingBoxes[i].text_content = string;
     }
   }
 
@@ -1637,7 +1778,11 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let alignment = isElementWithinAndAligned(textHtmlElementInCell, window.extraCells[i].extra_cell_element);
                 if (alignment.isTopLeftAligned) {
-                  window.extraCells[i].text_alignment = 'top_left';
+                  window.extraCells[i].text_alignment_horizontal = 'left';
+                  window.extraCells[i].text_alignment_vertical = 'top';
+                }
+                else if (alignment.isLeftAligned) {
+                  window.extraCells[i].text_alignment_horizontal = 'left';
                 }
               }
             }
@@ -1814,7 +1959,11 @@ document.getElementById('upload').addEventListener('change', async (event) => {
 
                 let alignment = isElementWithinAndAligned(textHtmlElementInCell, baseElements[i]);
                 if (alignment.isTopLeftAligned) {
-                  window.extraCells[i].text_alignment = 'top_left';
+                  item.text_alignment_horizontal = 'left';
+                  item.text_alignment_vertical = 'top';
+                }
+                else if (alignment.isLeftAligned) {
+                  item.text_alignment_horizontal = 'left';
                 }
               }
             }
