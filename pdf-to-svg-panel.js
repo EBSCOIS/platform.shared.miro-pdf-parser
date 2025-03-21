@@ -576,7 +576,7 @@ async function createShapes(array, type, frame) {
         let style = {
           color: (array[i]?.font_color ? array[i]?.font_color : '#ff0000'),
           fillColor: (array[i]?.text_style?.fillColor ? array[i]?.text_style?.fillColor : array[i]?.background_color ? array[i]?.background_color : '#ffffff'),
-          fontSize: 5,
+          fontSize: 4,
           fontFamily: 'arial',
           textAlign: array[i]?.text_alignment_horizontal ? 'left' : 'center',
           textAlignVertical: array[i]?.text_alignment_vertical ? 'top' : 'middle',
